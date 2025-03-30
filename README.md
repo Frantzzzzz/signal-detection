@@ -6,10 +6,10 @@
 
 ## 📌 项目亮点
 
-- ✅ **mAP50 0.652** - 在参数量基本相同的情况下，识别精度超过yolov8和yolov11
+- ✅ **mAP50 0.652** - 相较于yolov8的大参数量和yolov11的低精度，我们的模型实现了参数量和检测精度的平衡
 - ⚡ **32 FPS** - 在Realsense D435i上的实时性能
 - 🛠️ **三大创新** - LRSA注意力/AKConv/图像增强流水线
-- 📱 **轻量化** - 模型仅8.8MB (FP16量化后)
+- 📱 **轻量化** - 模型仅需8.8MB内存
 
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0%2B-red.svg)](https://pytorch.org/)
@@ -230,7 +230,6 @@ model.predict(source=imagepath, save=True, imgsz=640, conf=0.5)
   
 
 ![image](https://github.com/chaizwj/yolov8-tricks/assets/90506129/5ad97a66-cd79-4665-a295-938637bf3f61)
-
 
 
 </div>
