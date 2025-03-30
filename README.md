@@ -229,7 +229,7 @@ model.predict(source=imagepath, save=True, imgsz=640, conf=0.5)
 <div align="center">
   
 
-![image](https://github.com/chaizwj/yolov8-tricks/assets/90506129/5ad97a66-cd79-4665-a295-938637bf3f61)
+# ![image]
 
 
 </div>
