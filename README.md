@@ -1,8 +1,20 @@
-<div align="">
-  <p>
-    <a href="https://yolovision.ultralytics.com/" target="_blank">
-      </a>
-  </p>
+# 轨道交通信号标志的实时识别系统
+
+<div align="center">
+  <img src="./figure/pipeline.png" width="80%"/>
+  <p>系统架构图</p>
+</div>
+
+## 📌 项目亮点
+
+- ✅ **mAP50 0.652** - 在轨道交通信号数据集上的最优表现
+- ⚡ **32 FPS** - 在Realsense D435i上的实时性能
+- 🛠️ **三大创新** - LRSA注意力/AKConv/图像增强流水线
+- 📱 **轻量化** - 模型仅8.8MB (FP16量化后)
+
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0%2B-red.svg)](https://pytorch.org/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
 ### ⭐简介
