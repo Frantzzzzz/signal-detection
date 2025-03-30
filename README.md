@@ -228,9 +228,8 @@ model.predict(source=imagepath, save=True, imgsz=640, conf=0.5)
 
 <div align="center">
   
-
-# ![image]
-
+![image](77401743330246_.pic.jpg)
+![image](77381743330183_.pic_hd.jpg)
 
 </div>
 
