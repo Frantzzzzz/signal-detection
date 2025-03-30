@@ -22,14 +22,17 @@
 在本研究中，我们不仅在嵌入式设备中进行了图像处理技术的创新，还通过改进YOLO模型的 backbone 部分和将其部署在实时检测设备上，进一步提升了轨道交通信号标志的自动识别能力。我们的工作可以分为三个关键部分：
 ### 1. 实时图像处理技术
 #### (1) 图像增强
-我们借鉴了CVPR2024年提出的《Color Shift Estimation-and-Correction for Image Enhancement》方法，通过校正过曝和欠曝区域的亮度、消除因增亮或变暗带来的细节丢失和颜色伪影，显著提升了图像细节和颜色的表现。该方法结合UNet网络、伪正态特征生成器、颜色偏移估计（COSE）模块以及颜色调制（COMO）模块，有效解决了复杂环境下的视觉问题，为后续信号标志的识别提供了更准确的图像输入。
+- 我们借鉴了CVPR2024年提出的 [Color Shift Estimation-and-Correction for Image Enhancement](https://github.com/yiyulics/CSEC) 这篇论文中的方法，通过校正过曝和欠曝区域的亮度、消除因增亮或变暗带来的细节丢失和颜色伪影，显著提升了图像细节和颜色的表现。
+- 该方法结合UNet网络、伪正态特征生成器、颜色偏移估计（COSE）模块以及颜色调制（COMO）模块，有效解决了复杂环境下的视觉问题，为后续信号标志的识别提供了更准确的图像输入。
 #### (2) 边缘强化
-我们使用了一种基于Canny算子的图像边缘强化算法，用于提升图像中边缘的清晰度。在轨道交通信号标志的自动识别中，清晰的边缘对于提取标志的形状至关重要，边缘强化有助于改善检测精度，尤其是在低对比度或模糊图像的情况下
+- 我们使用了一种基于Canny算子的图像边缘强化算法，用于提升图像中边缘的清晰度。
+- 在低对比度或模糊的情况下（通常由行驶速度和天气因素影响），边缘强化有助于改善轨道交通信号标志检测精度.
 #### (3) 色彩识别与增强
-为提高交通信号的识别能力，特别是红绿灯信号的颜色准确识别，我们基于OpenCV实现了色彩识别和增强技术。这一方法通过对图像中的特定颜色（如红绿灯的红、绿、黄）进行精确识别和增强，能够减少由于环境光照变化、物体遮挡或信号标志颜色偏差带来的误判问题，从而确保识别系统的高准确性和可靠性。
+- 为提高交通信号的识别能力，特别是红绿灯信号的颜色准确识别，我们基于OpenCV实现了色彩识别和增强技术。
+- 这一方法通过对图像中的特定颜色（如红绿灯的红、绿、黄）进行精确识别和增强，能够减少由于环境光照变化、物体遮挡或信号标志颜色偏差带来的误判问题，从而确保识别系统的高准确性和可靠性。
 
 ### 2. YOLO模型的改进
-针对YOLO模型在小目标和遮挡检测中的不足，我们提出了对其backbone部分的改进。我们引入了局部区域自注意力机制（Local-Region Self-Attention, LRSA），并评估了该机制对YOLOv8n和YOLOv11n模型的影响，特别是在不同位置（如p3和p4）的加入对模型参数量和精度的影响。
+针对YOLO在小目标和遮挡检测中的不足，我们提出了对其backbone部分的改进。我们引入了局部区域自注意力机制（Local-Region Self-Attention, LRSA），并评估了该机制对YOLOv8n和YOLOv11n模型的影响，特别是在不同位置（如p3和p4）的加入对模型参数量和精度的影响。
 
 #### (1) 模块设计
 ##### 重叠补丁
@@ -45,8 +48,40 @@
 ### 3. 模型部署与实时检测
 我们将改进后的YOLO模型部署在Realsense D435i摄像头上，实现了实时图像检测。借助Realsense的深度感知能力和高效的嵌入式处理技术，我们的模型能够在复杂的轨道交通环境中实时识别信号标志，并做出快速反应。
 
+
 ## ⭐模型性能
 
+### 模型优化实验——性能对比 (FLOPS vs. mAP50)
+
+| Model | FLOPS (G) | AP<sub>50</sub><sup>test</sup> | Notes |
+| :-- | :-: | :-: | :-- |
+| **v8_n** | 8.1 | 0.585 | 基线模型 |
+| **v8_n_LRSA(p4)** | 8.8 | 0.622 | 在p4层加入LRSA注意力|
+| **v8_n_LRSA(p3)** | 8.8 | **0.652** | **最优性能** |
+| v8_n_LRSA_neg(p3) | - | - | 实验失败 |
+| v8_n_AKConv | 7.6 | ~0 | AKConv不适用 |
+| v8_prune | 7.3 | ~0 | 剪枝实验，不适用 |
+| **v11_n 无噪声** | 6.3 | 0.457 | v11基线 |
+| **v11_n 加噪** | 6.3 | 0.596 | 数据增强 |
+| v11_n_neg | × | × | 实验失败 |
+| **v11_n_LRSA(p4)** | 7.0 | 0.552 | 在p4层加入LRSA注意力 |
+| **v11_n_LRSA(p3)** | 7.0 | 0.603 | 调整注意力位置 |
+| **v11_n_LRSA+AKConv** | 6.9 | 0.540 | 混合架构 |
+| **v11_s** | 21.3 | 0.647 | 大模型对比 |
+
+### 关键结论
+
+- **最佳模型**: v8_n_LRSA(p3)
+  - FLOPS: 8.8 G
+  - mAP50: **0.652**
+  
+- 性能趋势:
+  - LRSA注意力有效提升精度（最高+6.7%）
+  - AKConv在本任务中效果不佳
+  - 引入正负样本进行对比学习效果不佳
+  - v11系列模型更轻量但精度略低
+
+    
 ### 性能对比 (OSDAR23测试集)
 
 | Model | Test Size | AP<sup>test</sup> | AP<sub>50</sub><sup>test</sup> | batch 1 fps | batch 32 avg time |
@@ -55,6 +90,17 @@
 | [**YOLOv11n**](https://github.com/ultralytics/ultralytics) | 640 | **34.7%** | **47.9%** | 400 *fps* | 2.5 *ms* |
 | [**Ours**](#) | 640 | **41.9%** | **54.9%** | 417 *fps* | 2.4 *ms* |
 
+## ⭐数据集
+
+“Open Sensor Data for Rail 2023”（*[OSDaR23](https://data.fid-move.de/dataset/osdar23)*，DOI: 10.57806/9mv146r0）是由德国铁路交通研究中心（DZSF）、数字铁路德国 / DB Netz AG 和 FusionSystems GmbH 联合研究项目创建的。
+
+该数据集包含45个标注的多传感器数据序列，在本任务中，我们仅使用RGB图片、红外图像以及标注的JSON文件来检测“signal”类别：
+
+- RGB 图片（.png）：用于捕捉彩色图像。
+- 红外图片（.png）：用于捕捉红外图像。
+- JSON 文件：包含标注信息，记录每张图像中“signal”类别的物体类型和位置。
+
+根据要求，我们在根目录的datasets文件夹中完成了训练集，测试集，和验证集的划分。
 
 ## ⭐运行环境
 
@@ -80,21 +126,17 @@
 首先将本仓库克隆到本地电脑上
 
 ```bash
-git clone git@github.com:chaizwj/yolov8-tricks.git
+git clone https://github.com/Frantzzzzz/signal-detection.git
 ```
-然后使用pip命令在一个[**Python>=3.8**](https://www.python.org/)环境中安装`ultralytics`包，此环境还需包含[**PyTorch>=1.8**](https://pytorch.org/get-started/locally/)。这也会安装所有必要的[依赖项](https://github.com/ultralytics/ultralytics/blob/main/requirements.txt)。
-
-
-
+使用pip命令安装`ultralytics`包
 
 ```bash
 pip install ultralytics
 ```
-然后还要先要执行以下命令，根据 requirements.txt文件中需要的第三方库进行安装
+然后根据 requirements.txt文件中需要的第三方库进行安装，或直接使用以下命令
 ```bash
 pip install -r requirements.txt
 ```
-
 
 </details>
 
@@ -102,52 +144,87 @@ pip install -r requirements.txt
 <summary>使用</summary>
 
 
-#### 模型训练
+#### 🌟 模型训练
 
-在根目录下找到mytrain.py文件，运行下面这行代码
+在根目录下找到train_demo.py文件，运行下面这行代码，结果将会保存在 runs/detect/train 文件夹中
+
+```python
+import warnings
+warnings.filterwarnings('ignore')
+from ultralytics import YOLO
+ 
+if __name__ == '__main__':
+    # model = YOLO('ultralytics-main/ultralytics/cfg/models/11/yolo11-traffic-Akconv.yaml')   # yolov11+Akconv
+    # model = YOLO('ultralytics-main/ultralytics/cfg/models/11/yolo11-traffic.yaml')   # yolov11(+LRST)
+    model = YOLO('ultralytics-main/ultralytics/cfg/models/v8/yolov8.yaml')   # yolov8(+LRST)
+    model.train(data='ultralytics-main/ultralytics/cfg/datasets/traffic.yaml',   # 指定训练数据集的配置文件路径，这个.yaml文件包含了数据集的路径和类别信息
+                cache=True,  # 是否缓存数据集以加快后续训练速度，False表示不缓存
+                epochs=400,   # 设置训练的总轮数为400轮
+                batch=16,      # 设置每个训练批次的大小为16，即每次更新模型时使用16张图片
+                close_mosaic=10,  # 设置在训练结束前多少轮关闭 Mosaic 数据增强，10 表示在训练的最后 10 轮中关闭 Mosaic
+                workers=8,       # 设置用于数据加载的线程数为8，更多线程可以加快数据加载速度
+                patience=50,     # 在训练时，如果经过50轮性能没有提升，则停止训练（早停机制）
+                device=[0,1],      # 指定使用的设备，'0'表示使用第一块GPU进行训练
+                optimizer='SGD', #设置优化器为SGD（随机梯度下降），用于模型参数更新
+                # neg_dir="autodl-tmp/neg_dir",  # 负样本文件夹
+                # neg_num=-2,  # 负样加入数
+                verbose=True,
+    )
+```
+*⚠️ 如果你想同时使用正负样本进行训练，请取消掉model.train中的注释*
+
+#### 🌟 模型验证
+
+在根目录下找到val.py文件，运行下面这行代码，结果将会保存在 runs/val 文件夹中
 
 ```python
 from ultralytics import YOLO
+import sys
+sys.path.append('ultralytics-main/ultralytics/nn/modules/')
 
+# 导入LRSA模块
+try:
+    from LRSA import LRSA
+    print("LRSA module loaded successfully.")
+except ImportError:
+    print("LRSA module not found!")
 
-# 加载 yolov8 模型，根据yaml配置文件。每次改进 yolov8 模型,这里更换对应 配置 yaml 就行 
-model = YOLO('ultralytics/cfg/models/v8/yolov8-biformer.yaml')
-
-# 选择预训练权重，这里默认导入了 yolov8s.pt 和 yolov8n.pt
-model = YOLO('yolov8s.pt')
-
-# 训练 yolov8 模型
-results = model.train(data='VisDrone.yaml')
+if __name__ == '__main__':
+    model = YOLO('runs/detect/train30/weights/best.pt') 
+    model.val(data='ultralytics-main/ultralytics/cfg/datasets/traffic.yaml',
+              split='test',
+              batch=16,
+              conf=0.1,      
+              iou=0.5,       
+              save_json=True, 
+              project='runs/test',
+              name='v8',
+    )
 ```
+#### 🌟 模型预测
 
-如果你想要使用其他版本的 预训练权重，可以去[预训练权重](https://github.com/ultralytics/assets/releases)中下载。
-
-#### 模型预测
-
-在根目录下找到mypredict.py文件，运行下面这行代码
+在根目录下找到predict.py文件，运行下面这行代码，结果将会保存在 runs/detect/predict 文件夹中
 
 ```python
 from ultralytics import YOLO
+import sys
+sys.path.append('ultralytics-main/ultralytics/nn/modules/')
 
+# 导入LRSA模块
+try:
+    from LRSA import LRSA
+    print("LRSA module loaded successfully.")
+except ImportError:
+    print("LRSA module not found!")
 
-# 加载 yolov8 模型，根据yaml配置文件。每次改进 yolov8 模型,这里更换对应 配置 yaml 就行 
-model = YOLO('ultralytics/cfg/models/v8/yolov8-biformer.yaml')
-
-# 选择预训练权重，这里默认导入了 yolov8s.pt 和 yolov8n.pt
-model = YOLO('yolov8s.pt')
-
-# 训练 yolov8 模型
-results = model.train(data='VisDrone.yaml')
+# Load pretrained model
+model = YOLO("runs/detect/train30/weights/best.pt")  
+imagepath = r'autodl-tmp/datasets/images/test'
+model.predict(source=imagepath, save=True, imgsz=640, conf=0.5)
 ```
-### ⭐数据集
-
-数据集已经提前下载好了，在datasets文件夹下有一个VisDrone，里面划分了训练集，测试集，还有验证集
 
 
-
-### ⭐一些新增的地方
-#### 热力图
-在 Hot-Pic文件夹下的hotPic.py代码文件中，可以根据自己的喜好，选择一种生成方式，有 GradCAM, XGradCAM, EigenCAM, HiResCAM 等方式。下面是生成的热力图，仅供参考
+### ⭐测试结果
 
 <div align="center">
   
@@ -155,32 +232,6 @@ results = model.train(data='VisDrone.yaml')
 ![image](https://github.com/chaizwj/yolov8-tricks/assets/90506129/5ad97a66-cd79-4665-a295-938637bf3f61)
 
 
-              
-![image](https://github.com/chaizwj/yolov8-tricks/assets/90506129/f81eab4c-de25-4660-8d23-259e731dd5b6)
-
-
 
 </div>
 
-
-
-</details>
-
-#### 自定义的实验结果图
-
-在 Experiment-Pic文件夹下有两个py代码文件，可以根据自己的喜好，选择一种生成方式。下面是生成的结果图，仅供参考
-
-<div align="center">
-  
-
-![image](https://github.com/chaizwj/yolov8-tricks/assets/90506129/74d2aa1f-f8c5-4bbf-b38b-428276935a5c)
-![image](https://github.com/chaizwj/yolov8-tricks/assets/90506129/641d063a-1c17-4544-8343-083f43d1e79b)
-
-
-
-
-</div>
-
-
-### ⭐持续更新中...
-</details>
