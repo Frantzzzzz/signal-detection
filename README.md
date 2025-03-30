@@ -136,24 +136,27 @@
 ## ⭐运行步骤
 
 <details open>
-<summary>安装</summary>
-
-
+<summary>克隆项目</summary>
   
 首先将本仓库克隆到本地
 
 ```bash
 git clone https://github.com/Frantzzzzz/signal-detection.git
 ```
+
+<details open>
+<summary>环境配置</summary>
+  
 使用pip命令安装`ultralytics`包
 
 ```bash
 pip install ultralytics
 ```
-然后根据 requirements.txt文件中需要的第三方库进行安装，或直接使用以下命令
+根据 requirements.txt文件中需要的第三方库进行安装，或直接使用以下命令
 ```bash
 pip install -r requirements.txt
 ```
+
 
 </details>
 
@@ -219,7 +222,7 @@ if __name__ == '__main__':
     )
 ```
 #### 🌟 模型预测
-
+##### 1. 图像识别
 在根目录下找到predict.py文件，运行下面这行代码，结果将会保存在 runs/detect/predict 文件夹中
 
 ```python
@@ -239,7 +242,17 @@ model = YOLO("runs/detect/train30/weights/best.pt")
 imagepath = r'autodl-tmp/datasets/images/test'
 model.predict(source=imagepath, save=True, imgsz=640, conf=0.5)
 ```
-
+##### 2. 摄像头实时检测
+- 配置环境
+```bash
+conda create -n camera python=3.9
+conda activate camera
+pip install -r requirements_camera.txt
+```
+- 启动摄像头，同时进行色彩增强和实时检测
+```bash
+python colorun.py
+```
 
 ### ⭐测试结果
 
